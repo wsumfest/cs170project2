@@ -1,5 +1,6 @@
 import os
 import operator
+import networkx as nx
 
 class Problem():
     """A representation of the graph problem that we are working with"""
@@ -10,7 +11,7 @@ class Problem():
         self.adj_matrix = adj_matrix
         self.child_set = set(child_nodes)
         self.vertices = []
-        self.edges = {}
+        self.edges = []
         self.solution = ""
 
     def set_num_nodes(self, num):
@@ -35,10 +36,9 @@ class Problem():
     def set_edges_and_vertices(self):
         for num in range(0,self.num_nodes - 1):
             self.vertices.append(num)
-            (self.edges)[num] = []
             for j in range(0,self.num_nodes - 1):
                 if (self.get_adj_matrix())[num][j] == 1:
-                    (self.edges)[num].append(j)
+                    self.edges.append((num, j))
 
     def get_solution(self):
         return self.solution
@@ -72,14 +72,31 @@ def get_array_from_string(string):
 
 """Takes an instance of our problem and writes to our output file,
    transforms into vertices and edges to make search easier """
-def compute(problem, output_file):
+def compute(problem):
     problem.set_edges_and_vertices()
+    net_graph = nx.DiGraph()
+    net_graph.add_edges_from(problem.edges)
 
+    while True:
+        try:
+            cycle = nx.find_cycle(net_graph)
+            so_far = []
+            for edge in cycle:
+                first = edge[0]
+                second = edge[1]
+                if first not in so_far:
+                    so_far.append(first)
+                if second not in so_far:
+                    so_far.append(second)
+            for node in so_far:
+                problem.solution += str(node) + " "
+                net_graph.remove_node(node)
+            problem.solution += "; "
 
-    
-
-
-
+        except Exception, e:
+            break
+        finally:
+            break
 
 
 def main(directory):
@@ -118,12 +135,13 @@ def main(directory):
             ### close the handle because we are done reading data from input ###
             handle.close()
             ### Now we can start working on our problem ###
-            compute(problem_instance, write_handle)
+            compute(problem_instance)
 
         ### Sort problems by instance number, we are ready to write to output ###
         problems.sort(key=operator.attrgetter("instance_number"))
         for problem in problems:
             write_handle.write(problem.get_solution())
+            write_handle.write("\n")
 
         write_handle.close()
 
