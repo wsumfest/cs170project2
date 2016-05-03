@@ -12,7 +12,7 @@ class Problem():
         self.child_set = set(child_nodes)
         self.vertices = []
         self.edges = []
-        self.solution = ""
+        self.solution = list() #### effeciency
 
     def set_num_nodes(self, num):
         self.num_nodes = num
@@ -71,32 +71,50 @@ def get_array_from_string(string):
 
 
 """Takes an instance of our problem and writes to our output file,
-   transforms into vertices and edges to make search easier """
+   transforms into vertices and edges to make search easier. Implementing
+    the Top Tradinc Cycles code """
 def compute(problem):
+    print "foo"
     problem.set_edges_and_vertices()
     net_graph = nx.DiGraph()
     net_graph.add_edges_from(problem.edges)
 
+    temp = list()
+
     while True:
         try:
+            this = []
             cycle = nx.find_cycle(net_graph)
-            so_far = []
-            for edge in cycle:
-                first = edge[0]
-                second = edge[1]
-                if first not in so_far:
-                    so_far.append(first)
-                if second not in so_far:
-                    so_far.append(second)
-            for node in so_far:
-                problem.solution += str(node) + " "
-                net_graph.remove_node(node)
-            problem.solution += "; "
+            for pair in cycle:
+                if pair[0] not in this:
+                    this.append(pair[0])
+                if pair[1] not in this:
+                    this.append(pair[1])
+            net_graph.remove_nodes_from(this)
+
+
+            temp.append(this)
 
         except Exception, e:
-            break
-        finally:
-            break
+            new_copy = []
+            for donor_cycle in temp:
+                donor_cycle.append(";")
+            
+                    
+
+            for donor_cycle in temp:
+                print donor_cycle
+                "".join(donor_cycle)
+
+
+            problem.solution = temp
+
+            return
+
+    return
+
+
+
 
 
 def main(directory):
@@ -140,7 +158,7 @@ def main(directory):
         ### Sort problems by instance number, we are ready to write to output ###
         problems.sort(key=operator.attrgetter("instance_number"))
         for problem in problems:
-            write_handle.write(problem.get_solution())
+            write_handle.write(str(problem.instance_number))
             write_handle.write("\n")
 
         write_handle.close()
