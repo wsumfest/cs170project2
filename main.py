@@ -12,7 +12,7 @@ class Problem():
         self.child_set = set(child_nodes)
         self.vertices = []
         self.edges = []
-        self.solution = list() #### effeciency
+        self.solution = "" #### effeciency
 
     def set_num_nodes(self, num):
         self.num_nodes = num
@@ -74,7 +74,6 @@ def get_array_from_string(string):
    transforms into vertices and edges to make search easier. Implementing
     the Top Tradinc Cycles code """
 def compute(problem):
-    print "foo"
     problem.set_edges_and_vertices()
     net_graph = nx.DiGraph()
     net_graph.add_edges_from(problem.edges)
@@ -91,23 +90,25 @@ def compute(problem):
                 if pair[1] not in this:
                     this.append(pair[1])
             net_graph.remove_nodes_from(this)
-
-
-            temp.append(this)
+            if len(cycle) < 5:
+                temp.append(this)
 
         except Exception, e:
             new_copy = []
             for donor_cycle in temp:
-                donor_cycle.append(";")
-            
+                new_temp = [str(i) for i in donor_cycle]
+                new_copy.append(new_temp)
                     
+            final_copy = ""
 
-            for donor_cycle in temp:
-                print donor_cycle
-                "".join(donor_cycle)
+            for donor_cycle in new_copy:
+                donor_string = " ".join(donor_cycle)
+                new_string = donor_string.rstrip()
+                new_string += "; "
 
+                final_copy += new_string
 
-            problem.solution = temp
+            problem.solution = final_copy
 
             return
 
@@ -158,7 +159,9 @@ def main(directory):
         ### Sort problems by instance number, we are ready to write to output ###
         problems.sort(key=operator.attrgetter("instance_number"))
         for problem in problems:
-            write_handle.write(str(problem.instance_number))
+            if problem.solution == "":
+                problem.solution = "None"
+            write_handle.write(problem.solution)
             write_handle.write("\n")
 
         write_handle.close()
